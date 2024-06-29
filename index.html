@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Signal and Timer</title>
+    <style type="text/css">
+        body {
+            background-color: #F5F5F5;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .data-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 50%;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #FFF;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        .red {
+            background-color: red;
+        }
+        .green {
+            background-color: green;
+        }
+        .amber {
+            background-color: orange;
+        }
+        .countdown-timer {
+            font-size: 48px;
+            font-weight: bold;
+            color: #6EB7FF;
+        }
+        .data-head {
+            margin: auto;
+            width: 50%;
+            text-align: center;
+            font-size: 45px;
+            font-weight: bold;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #FFF;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+        }
+    </style>
+    <!-- Include Firebase Library -->
+    <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-database.js"></script>
+</head>
+<body>
+
+<div class="data-head">Signal and Timer</div>
+
+<div class="data-container">
+    <div id="signalCircle" class="circle"></div>
+    <div class="countdown-timer" id="timerValue">Loading...</div>
+</div>
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-database.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyCzitvHQb7LoDrfo8Hea_JjtQw9bkFTW8k",
+        authDomain: "signaltest-76781.firebaseapp.com",
+        databaseURL: "https://signaltest-76781-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "signaltest-76781",
+        storageBucket: "signaltest-76781.appspot.com",
+        messagingSenderId: "392812485692",
+        appId: "1:392812485692:web:93b3252f0405e7a4fbb739"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const signalCircle = document.getElementById('signalCircle');
+    const timerValueDisplay = document.getElementById('timerValue');
+
+    // Function to parse HHMMSS timestamp into a Date object
+    function parseTimestamp(timestamp) {
+        const hours = parseInt(timestamp.substring(0, 2), 10);
+        const minutes = parseInt(timestamp.substring(2, 4), 10);
+        const seconds = parseInt(timestamp.substring(4, 6), 10);
+        const now = new Date();
+        now.setHours(hours, minutes, seconds, 0);
+        return now;
+    }
+
+    // Function to update the countdown timer
+    function updateCountdown(endTime) {
+        const now = new Date();
+        const timeLeft = endTime - now;
+
+        if (timeLeft > 0) {
+            const secondsLeft = Math.floor(timeLeft / 1000);
+            timerValueDisplay.textContent = secondsLeft;
+        } else {
+            timerValueDisplay.textContent = "0";
+            clearInterval(countdownInterval);
+        }
+    }
+
+    // Listen for changes to the /signal value
+    const signalRef = ref(database, 'signal');
+    onValue(signalRef, (snapshot) => {
+        const signal = snapshot.val();
+        signalCircle.className = 'circle'; // Reset class
+
+        if (signal === 'R') {
+            signalCircle.classList.add('red');
+        } else if (signal === 'A') {
+            signalCircle.classList.add('amber');
+        } else if (signal === 'G') {
+            signalCircle.classList.add('green');
+        }
+    });
+
+    // Variables to store timestamp and duration
+    let timestamp;
+    let duration;
+
+    // Listen for changes to the /timestamp value
+    const timestampRef = ref(database, 'timeStamp');
+    onValue(timestampRef, (snapshot) => {
+        timestamp = snapshot.val();
+        if (timestamp && duration) {
+            const startTime = parseTimestamp(timestamp);
+            const endTime = new Date(startTime.getTime() + duration * 1000);
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => updateCountdown(endTime), 1000);
+        }
+    });
+
+    // Listen for changes to the /duration value
+    const durationRef = ref(database, 'duration');
+    onValue(durationRef, (snapshot) => {
+        duration = snapshot.val();
+        if (timestamp && duration) {
+            const startTime = parseTimestamp(timestamp);
+            const endTime = new Date(startTime.getTime() + duration * 1000);
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => updateCountdown(endTime), 1000);
+        }
+    });
+
+    // Interval for updating the countdown timer
+    let countdownInterval;
+</script>
+
+</body>
+</html>
