@@ -114,7 +114,8 @@
         }
     }
 
-    // Variables to store timestamp and durations
+    // Variables to store signal, timestamp and durations
+    let signal;
     let timestamp;
     let rDuration;
     let aDuration;
@@ -132,10 +133,13 @@
             duration = gDuration;
         }
 
+        console.log(`Signal: ${signal}, Duration: ${duration}, Timestamp: ${timestamp}`);
+
         if (timestamp && duration) {
             const startTime = parseTimestamp(timestamp);
             const endTime = new Date(startTime.getTime() + duration * 1000);
             clearInterval(countdownInterval);
+            updateCountdown(endTime); // Update immediately
             countdownInterval = setInterval(() => updateCountdown(endTime), 1000);
         }
     }
@@ -143,7 +147,8 @@
     // Listen for changes to the /signal value
     const signalRef = ref(database, 'signal');
     onValue(signalRef, (snapshot) => {
-        const signal = snapshot.val();
+        signal = snapshot.val();
+        console.log(`Signal received: ${signal}`);
         signalCircle.className = 'circle'; // Reset class
 
         if (signal === 'R') {
@@ -154,31 +159,40 @@
             signalCircle.classList.add('green');
         }
 
-        startCountdown(signal, timestamp);
+        if (timestamp) {
+            startCountdown(signal, timestamp);
+        }
     });
 
     // Listen for changes to the /timeStamp value
     const timestampRef = ref(database, 'timeStamp');
     onValue(timestampRef, (snapshot) => {
         timestamp = snapshot.val();
+        console.log(`Timestamp received: ${timestamp}`);
+        if (signal) {
+            startCountdown(signal, timestamp);
+        }
     });
 
     // Listen for changes to the /rDuration value
     const rDurationRef = ref(database, 'rDuration');
     onValue(rDurationRef, (snapshot) => {
         rDuration = snapshot.val();
+        console.log(`rDuration received: ${rDuration}`);
     });
 
     // Listen for changes to the /aDuration value
     const aDurationRef = ref(database, 'aDuration');
     onValue(aDurationRef, (snapshot) => {
         aDuration = snapshot.val();
+        console.log(`aDuration received: ${aDuration}`);
     });
 
     // Listen for changes to the /gDuration value
     const gDurationRef = ref(database, 'gDuration');
     onValue(gDurationRef, (snapshot) => {
         gDuration = snapshot.val();
+        console.log(`gDuration received: ${gDuration}`);
     });
 
 </script>
