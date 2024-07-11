@@ -114,6 +114,32 @@
         }
     }
 
+    // Variables to store timestamp and durations
+    let timestamp;
+    let rDuration;
+    let aDuration;
+    let gDuration;
+    let countdownInterval;
+
+    // Function to start the countdown based on the current signal and timestamp
+    function startCountdown(signal, timestamp) {
+        let duration;
+        if (signal === 'R') {
+            duration = rDuration;
+        } else if (signal === 'A') {
+            duration = aDuration;
+        } else if (signal === 'G') {
+            duration = gDuration;
+        }
+
+        if (timestamp && duration) {
+            const startTime = parseTimestamp(timestamp);
+            const endTime = new Date(startTime.getTime() + duration * 1000);
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => updateCountdown(endTime), 1000);
+        }
+    }
+
     // Listen for changes to the /signal value
     const signalRef = ref(database, 'signal');
     onValue(signalRef, (snapshot) => {
@@ -127,38 +153,34 @@
         } else if (signal === 'G') {
             signalCircle.classList.add('green');
         }
+
+        startCountdown(signal, timestamp);
     });
 
-    // Variables to store timestamp and duration
-    let timestamp;
-    let duration;
-
-    // Listen for changes to the /timestamp value
+    // Listen for changes to the /timeStamp value
     const timestampRef = ref(database, 'timeStamp');
     onValue(timestampRef, (snapshot) => {
         timestamp = snapshot.val();
-        if (timestamp && duration) {
-            const startTime = parseTimestamp(timestamp);
-            const endTime = new Date(startTime.getTime() + duration * 1000);
-            clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => updateCountdown(endTime), 1000);
-        }
     });
 
-    // Listen for changes to the /duration value
-    const durationRef = ref(database, 'duration');
-    onValue(durationRef, (snapshot) => {
-        duration = snapshot.val();
-        if (timestamp && duration) {
-            const startTime = parseTimestamp(timestamp);
-            const endTime = new Date(startTime.getTime() + duration * 1000);
-            clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => updateCountdown(endTime), 1000);
-        }
+    // Listen for changes to the /rDuration value
+    const rDurationRef = ref(database, 'rDuration');
+    onValue(rDurationRef, (snapshot) => {
+        rDuration = snapshot.val();
     });
 
-    // Interval for updating the countdown timer
-    let countdownInterval;
+    // Listen for changes to the /aDuration value
+    const aDurationRef = ref(database, 'aDuration');
+    onValue(aDurationRef, (snapshot) => {
+        aDuration = snapshot.val();
+    });
+
+    // Listen for changes to the /gDuration value
+    const gDurationRef = ref(database, 'gDuration');
+    onValue(gDurationRef, (snapshot) => {
+        gDuration = snapshot.val();
+    });
+
 </script>
 
 </body>
