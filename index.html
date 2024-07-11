@@ -69,8 +69,13 @@
 <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-database-compat.js"></script>
 
-<script>
-    // Your web app's Firebase configuration
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-database.js";
+
+    // Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyCzitvHQb7LoDrfo8Hea_JjtQw9bkFTW8k",
         authDomain: "signaltest-76781.firebaseapp.com",
@@ -81,14 +86,15 @@
         appId: "1:392812485692:web:93b3252f0405e7a4fbb739"
     };
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    // Initialize Firebase app and database
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
 
+    // DOM elements
     const signalCircle = document.getElementById('signalCircle');
     const timerValueDisplay = document.getElementById('timerValue');
 
-    // Function to parse HHMMSS timestamp into a Date object
+    // Parse HHMMSS timestamp into a Date object
     function parseTimestamp(timestamp) {
         const hours = parseInt(timestamp.substring(0, 2), 10);
         const minutes = parseInt(timestamp.substring(2, 4), 10);
@@ -98,7 +104,7 @@
         return now;
     }
 
-    // Function to update the countdown timer
+    // Update countdown timer
     function updateCountdown(endTime) {
         const now = new Date();
         const timeLeft = endTime - now;
@@ -112,7 +118,7 @@
         }
     }
 
-    // Variables to store signal, timestamp and durations
+    // Variables to store signal, timestamp, and durations
     let signal;
     let timestamp;
     let rDuration;
@@ -120,7 +126,7 @@
     let gDuration;
     let countdownInterval;
 
-    // Function to start the countdown based on the current signal and timestamp
+    // Start countdown based on signal and timestamp
     function startCountdown(signal, timestamp) {
         let duration;
         if (signal === 'R') {
@@ -143,8 +149,8 @@
     }
 
     // Listen for changes to the /signal value
-    const signalRef = database.ref('signal');
-    signalRef.on('value', (snapshot) => {
+    const signalRef = ref(database, 'signal');
+    onValue(signalRef, (snapshot) => {
         signal = snapshot.val();
         console.log(`Signal received: ${signal}`);
         signalCircle.className = 'circle'; // Reset class
@@ -163,8 +169,8 @@
     });
 
     // Listen for changes to the /timeStamp value
-    const timestampRef = database.ref('timeStamp');
-    timestampRef.on('value', (snapshot) => {
+    const timestampRef = ref(database, 'timeStamp');
+    onValue(timestampRef, (snapshot) => {
         timestamp = snapshot.val();
         console.log(`Timestamp received: ${timestamp}`);
         if (signal) {
@@ -173,27 +179,27 @@
     });
 
     // Listen for changes to the /rDuration value
-    const rDurationRef = database.ref('rDuration');
-    rDurationRef.on('value', (snapshot) => {
+    const rDurationRef = ref(database, 'rDuration');
+    onValue(rDurationRef, (snapshot) => {
         rDuration = snapshot.val();
         console.log(`rDuration received: ${rDuration}`);
     });
 
     // Listen for changes to the /aDuration value
-    const aDurationRef = database.ref('aDuration');
-    aDurationRef.on('value', (snapshot) => {
+    const aDurationRef = ref(database, 'aDuration');
+    onValue(aDurationRef, (snapshot) => {
         aDuration = snapshot.val();
         console.log(`aDuration received: ${aDuration}`);
     });
 
     // Listen for changes to the /gDuration value
-    const gDurationRef = database.ref('gDuration');
-    gDurationRef.on('value', (snapshot) => {
+    const gDurationRef = ref(database, 'gDuration');
+    onValue(gDurationRef, (snapshot) => {
         gDuration = snapshot.val();
         console.log(`gDuration received: ${gDuration}`);
     });
-
 </script>
+
 
 </body>
 </html>
